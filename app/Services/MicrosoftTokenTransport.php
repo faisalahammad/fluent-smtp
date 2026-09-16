@@ -23,9 +23,23 @@ class MicrosoftTokenTransport
             return;
         }
 
-        add_action('http_api_curl', [self::class, 'disableAlpnForMicrosoftTokenRequest'], 10, 3);
+        add_action('http_api_curl', [self::class, 'onHttpApiCurl'], 10, 3);
 
         self::$hookRegistered = true;
+    }
+
+    /**
+     * http_api_curl action callback. Actions must not return a value, so the
+     * bool-returning worker stays separate for direct testing.
+     *
+     * @param resource|object $handle
+     * @param array $args
+     * @param string $url
+     * @return void
+     */
+    public static function onHttpApiCurl($handle, $args, $url)
+    {
+        self::disableAlpnForMicrosoftTokenRequest($handle, $args, $url);
     }
 
     /**
