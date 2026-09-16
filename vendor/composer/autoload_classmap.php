@@ -87,6 +87,7 @@ return array(
     'FluentMail\\App\\Services\\Mailer\\Providers\\TransMail\\Handler' => $baseDir . '/app/Services/Mailer/Providers/TransMail/Handler.php',
     'FluentMail\\App\\Services\\Mailer\\Providers\\TransMail\\ValidatorTrait' => $baseDir . '/app/Services/Mailer/Providers/TransMail/ValidatorTrait.php',
     'FluentMail\\App\\Services\\Mailer\\ValidatorTrait' => $baseDir . '/app/Services/Mailer/ValidatorTrait.php',
+    'FluentMail\\App\\Services\\MicrosoftTokenTransport' => $baseDir . '/app/Services/MicrosoftTokenTransport.php',
     'FluentMail\\App\\Services\\NotificationHelper' => $baseDir . '/app/Services/NotificationHelper.php',
     'FluentMail\\App\\Services\\Notification\\Manager' => $baseDir . '/app/Services/Notification/Manager.php',
     'FluentMail\\App\\Services\\Reporting' => $baseDir . '/app/Services/Reporting.php',

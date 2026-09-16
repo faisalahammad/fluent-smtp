@@ -119,6 +119,7 @@ class ComposerStaticInit9b719a7d374be78de74c2068943692fe
         'FluentMail\\App\\Services\\Mailer\\Providers\\TransMail\\Handler' => __DIR__ . '/../..' . '/app/Services/Mailer/Providers/TransMail/Handler.php',
         'FluentMail\\App\\Services\\Mailer\\Providers\\TransMail\\ValidatorTrait' => __DIR__ . '/../..' . '/app/Services/Mailer/Providers/TransMail/ValidatorTrait.php',
         'FluentMail\\App\\Services\\Mailer\\ValidatorTrait' => __DIR__ . '/../..' . '/app/Services/Mailer/ValidatorTrait.php',
+        'FluentMail\\App\\Services\\MicrosoftTokenTransport' => __DIR__ . '/../..' . '/app/Services/MicrosoftTokenTransport.php',
         'FluentMail\\App\\Services\\NotificationHelper' => __DIR__ . '/../..' . '/app/Services/NotificationHelper.php',
         'FluentMail\\App\\Services\\Notification\\Manager' => __DIR__ . '/../..' . '/app/Services/Notification/Manager.php',
         'FluentMail\\App\\Services\\Reporting' => __DIR__ . '/../..' . '/app/Services/Reporting.php',

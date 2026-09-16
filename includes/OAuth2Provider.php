@@ -2,6 +2,8 @@
 
 namespace FluentMail\Includes;
 
+use FluentMail\App\Services\MicrosoftTokenTransport;
+
 class OAuth2Provider
 {
     private $options;
@@ -177,6 +179,8 @@ class OAuth2Provider
 
         $requestData = $this->getAccessTokenRequestDetails($params);
 
+        MicrosoftTokenTransport::register();
+
         $response = wp_remote_request($requestData['url'], $requestData['params']);
 
         if (is_wp_error($response)) {
@@ -244,8 +248,9 @@ class OAuth2Provider
         return [
             'url' => $url,
             'params' => [
-                'method' => $method,
-                'body' => $options,
+                'method'      => $method,
+                'httpversion' => '1.1',
+                'body'        => $options,
                 'headers' => [
                     'content-type' => 'application/x-www-form-urlencoded'
                 ]
