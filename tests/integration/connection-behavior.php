@@ -10,6 +10,7 @@ use FluentMail\App\Services\Mailer\Providers\Gmail\Handler as GmailHandler;
 use FluentMail\App\Services\Mailer\Providers\Outlook\API as OutlookApi;
 use FluentMail\App\Services\Mailer\Providers\Outlook\Handler as OutlookHandler;
 use FluentMail\App\Services\Mailer\Providers\ToSend\Handler as ToSendHandler;
+use FluentMail\App\Services\MicrosoftTokenTransport;
 use FluentMail\App\Services\NotificationHelper;
 
 /** Minimal screen stub so is_admin() reports true without defining WP_ADMIN. */
@@ -850,6 +851,8 @@ return function () {
         FsmtpTest::assert(strpos($result['message'], $description) !== false, 'Microsoft error_description did not reach caller');
         FsmtpTest::assert(strpos($result['message'], 'reconnect') !== false, 'Outlook recovery guidance did not reach caller');
         FsmtpTest::assertSame(1, count(FsmtpTest::httpRequests()), 'Outlook made one intercepted token request');
+        $requests = FsmtpTest::httpRequests();
+        FsmtpTest::assertSame('1.1', $requests[0]['args']['httpversion'] ?? null, 'Outlook token request HTTP version');
     });
 
     FsmtpTest::case('Outlook successful token grant reports healthy without persisting', function () use (
@@ -880,6 +883,68 @@ return function () {
 
         FsmtpTest::assertSame(ConnectionHealth::STATUS_HEALTHY, $result['status'], 'Outlook healthy status');
         FsmtpTest::assertSame('', $result['message'], 'Outlook healthy message');
+    });
+
+    FsmtpTest::case('Microsoft token transport disables ALPN only for Microsoft token requests', function () {
+        FsmtpTest::assert(
+            MicrosoftTokenTransport::isMicrosoftTokenUrl('https://login.microsoftonline.com/common/oauth2/v2.0/token'),
+            'Microsoft token URL was not recognized'
+        );
+        FsmtpTest::assert(
+            !MicrosoftTokenTransport::isMicrosoftTokenUrl('https://login.microsoftonline.com/common/oauth2/v2.0/authorize'),
+            'Microsoft authorize URL was treated as a token URL'
+        );
+        FsmtpTest::assert(
+            !MicrosoftTokenTransport::isMicrosoftTokenUrl('https://graph.microsoft.com/v1.0/me/sendMail'),
+            'Microsoft Graph URL was treated as a token URL'
+        );
+        FsmtpTest::assert(
+            !MicrosoftTokenTransport::isMicrosoftTokenUrl('https://accounts.google.com/o/oauth2/token'),
+            'Google token URL was treated as a Microsoft token URL'
+        );
+
+        if (!function_exists('curl_init') || !function_exists('curl_close') || !defined('CURLOPT_SSL_ENABLE_ALPN')) {
+            FsmtpTest::skip('cURL ALPN option unavailable in this PHP runtime');
+            return;
+        }
+
+        $handle = curl_init('https://example.test');
+        if (!$handle) {
+            FsmtpTest::skip('could not create a cURL handle');
+            return;
+        }
+
+        try {
+            FsmtpTest::assertSame(
+                false,
+                MicrosoftTokenTransport::disableAlpnForMicrosoftTokenRequest(
+                    $handle,
+                    [],
+                    'https://accounts.google.com/o/oauth2/token'
+                ),
+                'Google token request ALPN result'
+            );
+            FsmtpTest::assertSame(
+                false,
+                MicrosoftTokenTransport::disableAlpnForMicrosoftTokenRequest(
+                    $handle,
+                    [],
+                    'https://graph.microsoft.com/v1.0/me/sendMail'
+                ),
+                'Microsoft Graph request ALPN result'
+            );
+            FsmtpTest::assertSame(
+                true,
+                MicrosoftTokenTransport::disableAlpnForMicrosoftTokenRequest(
+                    $handle,
+                    [],
+                    'https://login.microsoftonline.com/common/oauth2/v2.0/token'
+                ),
+                'Microsoft token request ALPN result'
+            );
+        } finally {
+            curl_close($handle);
+        }
     });
 
     FsmtpTest::case('Outlook refreshes only an expired cached token when force is false', function () use (
